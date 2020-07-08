@@ -1,4 +1,4 @@
-# spring-data-rest
+# spring-batch
 Spring Batch application
 
 ## Built With
