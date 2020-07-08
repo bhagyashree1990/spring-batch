@@ -1,5 +1,7 @@
 package com.sts.runner;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -17,16 +19,24 @@ public class JobRunner implements CommandLineRunner{
 	@Autowired
 	private JobLauncher jobLauncher;
 	
-	@Autowired
-	private Job job;
+	@Resource(name = "readCSVJob")
+	private Job readCSVJob;
+	
+	@Resource(name = "demoJob")
+	private Job demoJob;
 	
 	@Override
 	public void run(String... args) throws Exception {
 		LOG.info("INVOKED JobRunner");
-		JobParameters parameters = new JobParametersBuilder()
+		JobParameters csvJobParameters = new JobParametersBuilder()
 					.addString("JobID", String.valueOf(System.currentTimeMillis()))
 					.toJobParameters();
-		jobLauncher.run(job, parameters);
+		jobLauncher.run(readCSVJob, csvJobParameters);
+		
+		JobParameters demoJobParameters = new JobParametersBuilder()
+				.addString("JobID", String.valueOf(System.currentTimeMillis()))
+				.toJobParameters();
+		jobLauncher.run(demoJob, demoJobParameters);
 	}
 
 }

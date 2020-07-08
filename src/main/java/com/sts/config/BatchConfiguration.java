@@ -1,5 +1,6 @@
 package com.sts.config;
 
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -13,12 +14,16 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 
 import com.sts.model.Employee;
 import com.sts.tasks.ConsoleItemWriter;
+import com.sts.tasks.DeleteFilesTask;
+import com.sts.tasks.Task2;
 import com.sts.tasks.ValidationProcessor;
 
 @Configuration
@@ -30,6 +35,9 @@ public class BatchConfiguration {
 	
 	@Autowired
 	private StepBuilderFactory stepFactory;
+	
+	@Value(value = "${app.tasklet.input.file-path}")
+	private String directory;
 	
 	@Bean
 	public FlatFileItemReader<Employee> employeeReader(){
@@ -79,5 +87,24 @@ public class BatchConfiguration {
 		return jobFactory.get("readJob").incrementer(new RunIdIncrementer())
 				.start(readCSVJobStepOne())				
 				.build();
-	}		
+	}	
+	
+	
+	@Bean
+	public Step demoJobStepOne() {
+		return stepFactory.get("stepOne").tasklet(new DeleteFilesTask(new FileSystemResource(directory))).build();
+	}
+
+	@Bean
+	public Step demoJobStepTwo() {
+		return stepFactory.get("stepTwo").tasklet(new Task2()).build();
+	}
+
+	@Bean
+	public Job demoJob() {
+		return jobFactory.get("demoJob").incrementer(new RunIdIncrementer())
+				.start(demoJobStepOne())
+				.next(demoJobStepTwo())
+				.build();
+	}
 }
