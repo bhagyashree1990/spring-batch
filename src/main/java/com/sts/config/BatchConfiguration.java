@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.sts.model.Employee;
 import com.sts.tasks.DBItemWriter;
@@ -76,10 +77,16 @@ public class BatchConfiguration {
 	
 	@Bean
 	public Step readCSVJobStepOne() {
-		return stepFactory.get("readJobStepOne").<Employee,Employee>chunk(5)
+		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+		taskExecutor.setCorePoolSize(4);
+		taskExecutor.setMaxPoolSize(4);
+		taskExecutor.afterPropertiesSet();
+		
+		return stepFactory.get("readJobStepOne").<Employee,Employee>chunk(100)
 				.reader(employeeReader())
 				.processor(validationProcessor)
-				.writer(dbItemWriter)				
+				.writer(dbItemWriter)
+				.taskExecutor(taskExecutor)
 				.build();
 	}
 	

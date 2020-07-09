@@ -22,9 +22,9 @@ public class DBItemWriter implements ItemWriter<Employee> {
 	@Override
 	@Transactional
 	public void write(List<? extends Employee> employeeList) throws Exception {
-		LOG.info("DBItemWriter");
+		LOG.info("DBItemWriter: Count {}",employeeList.size());
 		employeeRepository.saveAll(employeeList);
-		LOG.info("{}",employeeList);
+		LOG.info("DBItemWriter: {}",employeeList);
 	}
 
 }

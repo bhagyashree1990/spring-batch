@@ -9,7 +9,7 @@ spring:
         createDatabaseIfNotExist: true     jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     open-in-view: false
   batch:
     initialize-schema: ALWAYS    job:      enabled: false
