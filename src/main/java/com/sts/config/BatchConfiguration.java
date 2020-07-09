@@ -7,7 +7,6 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -21,7 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 
 import com.sts.model.Employee;
-import com.sts.tasks.ConsoleItemWriter;
+import com.sts.tasks.DBItemWriter;
 import com.sts.tasks.DeleteFilesTask;
 import com.sts.tasks.Task2;
 import com.sts.tasks.ValidationProcessor;
@@ -38,6 +37,12 @@ public class BatchConfiguration {
 	
 	@Value(value = "${app.tasklet.input.file-path}")
 	private String directory;
+	
+	@Autowired
+	private ValidationProcessor validationProcessor;
+	
+	@Autowired
+	private DBItemWriter dbItemWriter;
 	
 	@Bean
 	public FlatFileItemReader<Employee> employeeReader(){
@@ -64,21 +69,11 @@ public class BatchConfiguration {
 	}
 	
 	@Bean
-	public ConsoleItemWriter<Employee> employeeWriter(){
-		return new ConsoleItemWriter<>();
-	}
-	
-	@Bean
-	public ItemProcessor<Employee, Employee> employeeProcessor(){
-		return new ValidationProcessor();
-	}
-	
-	@Bean
 	public Step readCSVJobStepOne() {
 		return stepFactory.get("readJobStepOne").<Employee,Employee>chunk(5)
 				.reader(employeeReader())
-				.processor(employeeProcessor())
-				.writer(employeeWriter())
+				.processor(validationProcessor)
+				.writer(dbItemWriter)
 				.build();
 	}
 	

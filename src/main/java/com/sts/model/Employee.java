@@ -1,15 +1,27 @@
 package com.sts.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Employee {
-	private String id;
+	@Id
+	private Long id;
+	
+	@Column(length = 50)
 	private String firstName;
+	
+	@Column(length = 50)
 	private String lastName;
+	
+	@Column(length = 5)
 	private String gender;
 	
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getFirstName() {
