@@ -1,7 +1,10 @@
 package com.sts.config;
 
 
+import javax.annotation.Resource;
+
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -44,6 +47,9 @@ public class BatchConfiguration {
 	@Autowired
 	private DBItemWriter dbItemWriter;
 	
+	@Resource(name = "employeeJobStatistics")
+	private JobExecutionListener jobExecutionListener;
+	
 	@Bean
 	public FlatFileItemReader<Employee> employeeReader(){
 		FlatFileItemReader<Employee> reader = new FlatFileItemReader<>();
@@ -73,13 +79,15 @@ public class BatchConfiguration {
 		return stepFactory.get("readJobStepOne").<Employee,Employee>chunk(5)
 				.reader(employeeReader())
 				.processor(validationProcessor)
-				.writer(dbItemWriter)
+				.writer(dbItemWriter)				
 				.build();
 	}
 	
 	@Bean
 	public Job readCSVJob() {
-		return jobFactory.get("readJob").incrementer(new RunIdIncrementer())
+		return jobFactory.get("readJob")
+				.incrementer(new RunIdIncrementer())
+				.listener(jobExecutionListener)
 				.start(readCSVJobStepOne())				
 				.build();
 	}	
