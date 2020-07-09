@@ -9,6 +9,8 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.sts.model.Employee;
@@ -101,20 +104,38 @@ public class BatchConfiguration {
 	
 	
 	@Bean
-	public Step demoJobStepOne() {
+	public Step demoStepOne() {
 		return stepFactory.get("stepOne").tasklet(new DeleteFilesTask(new FileSystemResource(directory))).build();
 	}
 
 	@Bean
-	public Step demoJobStepTwo() {
+	public Step demoStepTwo() {
 		return stepFactory.get("stepTwo").tasklet(new Task2()).build();
 	}
 
 	@Bean
-	public Job demoJob() {
-		return jobFactory.get("demoJob").incrementer(new RunIdIncrementer())
-				.start(demoJobStepOne())
-				.next(demoJobStepTwo())
+	public Job sequentialStepsJob() {
+		return jobFactory.get("sequentialStepsJob").incrementer(new RunIdIncrementer())
+				.start(demoStepOne())
+				.next(demoStepTwo())
+				.build();
+	}
+	
+	@Bean
+	public Job parallelFlowJob() {
+		Flow secondFlow = new FlowBuilder<Flow>("secondFlow")
+				.start(demoStepTwo())
+				.build();
+		
+		Flow parallelFlow = new FlowBuilder<Flow>("parallelFlow")
+				.start(demoStepOne())
+				.split(new SimpleAsyncTaskExecutor())
+				.add(secondFlow)
+				.build();
+		
+		return jobFactory.get("parallelStepsJob")
+				.start(parallelFlow)
+				.end()
 				.build();
 	}
 }
