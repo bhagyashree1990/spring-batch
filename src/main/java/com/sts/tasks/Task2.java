@@ -13,7 +13,9 @@ public class Task2 implements Tasklet{
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		LOG.info("START Task2");
-		//CUSTOM CODE HERE
+		//CUSTOM TASK to find SQUARES
+		for(int i=1;i<=2000;i++)
+			LOG.info("{} : {}",i,i*i);
 		LOG.info("END Task2");
 		return RepeatStatus.FINISHED;
 	}

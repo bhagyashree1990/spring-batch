@@ -22,21 +22,31 @@ public class JobRunner implements CommandLineRunner{
 	@Resource(name = "readCSVJob")
 	private Job readCSVJob;
 	
-	@Resource(name = "demoJob")
-	private Job demoJob;
+	@Resource(name = "sequentialStepsJob")
+	private Job sequentialStepsJob;
+	
+	@Resource(name = "parallelFlowJob")
+	private Job parallelFlowJob;
 	
 	@Override
 	public void run(String... args) throws Exception {
 		LOG.info("INVOKED JobRunner");
+		
 		JobParameters csvJobParameters = new JobParametersBuilder()
 					.addString("JobID", String.valueOf(System.currentTimeMillis()))
 					.toJobParameters();
 		jobLauncher.run(readCSVJob, csvJobParameters);
 		
-		JobParameters demoJobParameters = new JobParametersBuilder()
+		JobParameters sequentialJobParameters = new JobParametersBuilder()
 				.addString("JobID", String.valueOf(System.currentTimeMillis()))
 				.toJobParameters();
-		jobLauncher.run(demoJob, demoJobParameters);
+		jobLauncher.run(sequentialStepsJob, sequentialJobParameters);
+		
+		JobParameters parallelJobParameters = new JobParametersBuilder()
+				.addString("JobID", String.valueOf(System.currentTimeMillis()))
+				.toJobParameters();
+		jobLauncher.run(parallelFlowJob, parallelJobParameters);
+		
 	}
 
 }
